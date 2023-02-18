@@ -17,7 +17,33 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system_to_stage(StartupStage::PostStartup, player_spawn_system)
             .add_system(player_keyboard_event_system)
-            .add_system(player_movement_system);
+            .add_system(player_movement_system)
+            .add_system(player_fire_system);
+    }
+}
+
+fn player_fire_system(
+    mut commands: Commands,
+    kb: Res<Input<KeyCode>>,
+    game_textures: Res<GameTextures>,
+    query: Query<&Transform, With<Player>>
+    ) {
+    
+    if let Ok(player_tf) = query.get_single() {
+        dbg!(&player_tf);
+        if kb.just_pressed(KeyCode::Space) {
+            let (x, y) = (player_tf.translation.x, player_tf.translation.y);
+
+            // Spawn laser
+            commands.spawn_bundle(SpriteBundle {
+                texture: game_textures.player_laser.clone(),
+                transform: Transform {
+                    translation: Vec3::new(x, y, 0.),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+        }
     }
 }
 

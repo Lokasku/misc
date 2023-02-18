@@ -8,10 +8,13 @@ mod player;
 
 
 const PLAYER_SPRITE: &str = "ferry.png";
-const PLAYER_SIZE: (f32, f32) = (100., 67.);
+const PLAYER_SIZE: (f32, f32) = (80., 54.);
+const PLAYER_LASER_SPRITE: &str = "laserblue.png";
+const PLAYER_LASER_SIZE: (f32, f32) = (6., 36.);
 
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
+ 
 
 pub struct WinSize {
     pub w: f32,
@@ -19,7 +22,8 @@ pub struct WinSize {
 }
 
 struct GameTextures {
-    player: Handle<Image>
+    player: Handle<Image>,
+    player_laser: Handle<Image>
 }
 
 fn main() {
@@ -49,10 +53,11 @@ fn setup_system(
     let (win_width, win_height) = (window.width(), window.height());
 
     let win_size = WinSize { w: win_width, h: win_height };
-    commands.insert_resource(win_size);
+    commands.insert_resource(win_size); // Add resource
 
     let game_textures = GameTextures {
-        player: asset_server.load(PLAYER_SPRITE)
+        player: asset_server.load(PLAYER_SPRITE),
+        player_laser: asset_server.load(PLAYER_LASER_SPRITE)
     };
-    commands.insert_resource(game_textures);
+    commands.insert_resource(game_textures); // Add resource
 }

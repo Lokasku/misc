@@ -12,7 +12,10 @@ use crate::{
         SpriteSize,
         Laser,
         FromPlayer,
-        Enemy
+        Enemy,
+        ExplosionToSpawn,
+        Explosion,
+        ExplosionTimer
     },
     enemy::{
         EnemyPlugin
@@ -35,6 +38,7 @@ const ENEMY_LASER_SPRITE: &str = "lasered.png";
 const ENEMY_LASER_SIZE: (f32, f32) = (9., 37.);
 
 const EXPLOSION_SHEET: &str = "explosion.png";
+const EXPLOSION_LEN: usize = 16;
 
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
@@ -50,7 +54,7 @@ struct GameTextures {
     player_laser: Handle<Image>,
     enemy: Handle<Image>,
     enemy_laser: Handle<Image>,
-    explosion: Handle<Image>
+    explosion: Handle<TextureAtlas>
 }
 
 fn main() {
@@ -68,6 +72,8 @@ fn main() {
         .add_startup_system(setup_system)
         .add_system(movable_system)
         .add_system(player_laser_hit_enemy_system)
+        .add_system(explosion_to_spawn_system)
+        .add_system(explosion_animation_system)
         .run()
 }
 
@@ -87,7 +93,7 @@ fn setup_system(
     commands.insert_resource(win_size); // Add resource
 
     let texture_handle = asset_server.load(EXPLOSION_SHEET);
-    let texture_atlas = texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(64., 64.), 4, 4);
+    let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(64., 64.), 4, 4);
     let explosion = texture_atlases.add(texture_atlas);
 
     let game_textures = GameTextures {
@@ -151,6 +157,49 @@ fn player_laser_hit_enemy_system(
                 
                 // remove laser
                 commands.entity(laser_entity).despawn();
+
+                // spawn explosion
+                commands.spawn().insert(ExplosionToSpawn(enemy_tf.translation.clone()));
+            }
+        }
+    }
+}
+
+fn explosion_to_spawn_system(
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    query: Query<(Entity, &ExplosionToSpawn)>) {
+
+    for (explosion_spawn_entity, explosion_to_spawn) in query.iter() {
+        // spawn the explosion
+        commands.spawn_bundle(SpriteSheetBundle {
+            texture_atlas: game_textures.explosion.clone(),
+            transform: Transform {
+                translation: explosion_to_spawn.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Explosion)
+        .insert(ExplosionTimer::default());
+
+        // despawn the explosion
+        commands.entity(explosion_spawn_entity).despawn();
+    }
+}
+
+fn explosion_animation_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut ExplosionTimer, &mut TextureAtlasSprite), With<Explosion>>) {
+
+    for (entity, mut timer, mut sprite) in query.iter_mut() {
+        timer.0.tick(time.delta());
+        if timer.0.finished() {
+            sprite.index += 1;
+
+            if sprite.index >= EXPLOSION_LEN {
+                commands.entity(entity).despawn();
             }
         }
     }

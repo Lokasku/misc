@@ -34,6 +34,8 @@ const ENEMY_SIZE: (f32, f32) = (93., 84.);
 const ENEMY_LASER_SPRITE: &str = "lasered.png";
 const ENEMY_LASER_SIZE: (f32, f32) = (9., 37.);
 
+const EXPLOSION_SHEET: &str = "explosion.png";
+
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
 //// 
@@ -47,7 +49,8 @@ struct GameTextures {
     player: Handle<Image>,
     player_laser: Handle<Image>,
     enemy: Handle<Image>,
-    enemy_laser: Handle<Image>
+    enemy_laser: Handle<Image>,
+    explosion: Handle<Image>
 }
 
 fn main() {
@@ -71,6 +74,7 @@ fn main() {
 fn setup_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut windows: ResMut<Windows>) {
 
     // Camera
@@ -82,11 +86,16 @@ fn setup_system(
     let win_size = WinSize { w: win_width, h: win_height };
     commands.insert_resource(win_size); // Add resource
 
+    let texture_handle = asset_server.load(EXPLOSION_SHEET);
+    let texture_atlas = texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(64., 64.), 4, 4);
+    let explosion = texture_atlases.add(texture_atlas);
+
     let game_textures = GameTextures {
         player: asset_server.load(PLAYER_SPRITE),
         player_laser: asset_server.load(PLAYER_LASER_SPRITE),
         enemy: asset_server.load(ENEMY_SPRITE),
-        enemy_laser: asset_server.load(ENEMY_LASER_SPRITE)
+        enemy_laser: asset_server.load(ENEMY_LASER_SPRITE),
+        explosion
     };
     commands.insert_resource(game_textures); // Add resource
 }

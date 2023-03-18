@@ -3,7 +3,7 @@ Julia, or `jfg` more precisely (Julia fractal generator) is a software able to d
 #### Installation
 The installation process is simple, and far from being the most perfomant, but it is as it is today. So, to install `jfg` you must clone it as is and use it as is.
 ```
-git clone https://github.com/b4-b4/julia.git
+git clone https://github.com/Lukhell/misc
 ```
 #### Usage
 To use `jfg`, you must write your command as follows:

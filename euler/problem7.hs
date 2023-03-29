@@ -1,3 +1,5 @@
+-- https://projecteuler.net/problem=7
+
 import Data.List (find)
 
 find' :: (Int -> Bool) -> [Int] -> Int
